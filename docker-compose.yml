@@ -7,7 +7,32 @@ services:
     volumes:
       - .:/app
       - static_volume:/app/staticfiles
+    depends_on: [redis, rabbitmq]
+    env_file: .env
     command: sh -c "python manage.py migrate && gunicorn notifications.wsgi:application --bind 0.0.0.0:8000"
+
+  celery:
+    build: .
+    command: celery -A notifications worker -l info
+    volumes: [ .:/app ]
+    depends_on: [ redis, rabbitmq ]
+    env_file: .env
+
+  flower:
+    build: .
+    command: celery -A notifications flower --port=5555 --broker=redis://redis:6379/0
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+      - celery
+
+  redis:
+    image: redis:7-alpine
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports: [ "15672:15672" ]
 
   nginx:
     image: nginx:alpine
