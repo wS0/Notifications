@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Notification
 from .serializers import NotifySerializer
+from .tasks import deliver
 
 
 class SendView(APIView):
@@ -10,4 +11,5 @@ class SendView(APIView):
         if not s.is_valid():
             return Response(s.errors, 400)
         n = Notification.objects.create(**s.validated_data)
+        deliver.delay(n.id)
         return Response({"id": n.id, "status": "queued"}, 202)
