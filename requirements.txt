@@ -1,6 +1,8 @@
 Django>=4.2
-djangorestframework
+djangorestframework~=3.16.1
 gunicorn
-celery[redis]
+celery[redis]~=5.5.3
 redis
 flower
+twilio~=9.8.6
+requests~=2.32.5
